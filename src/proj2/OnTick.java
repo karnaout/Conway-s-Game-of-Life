@@ -5,15 +5,18 @@
  */
 package proj2;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 public class OnTick implements ActionListener {
 	
 	Population model;
-	View view;
+	MainView view;
 	
-	public OnTick(Population model, View view) {
+	public OnTick(Population model, MainView view) {
 		this.model = model;
 		this.view = view;
 	}
@@ -22,7 +25,6 @@ public class OnTick implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		this.model.update();
 		this.view.updatecounter();
-		// Recount alive cells
 		this.view.setNumbAlive();
 	}
 

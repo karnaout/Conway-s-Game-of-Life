@@ -1,11 +1,14 @@
 /*
  * Khaled Arnaout
  * Project 2 
- * View 
+ * Labels 
  */
 package proj2;
-
+/*
+ * All labels appear on the screen 
+ */
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -14,15 +17,11 @@ import javax.swing.JPanel;
 
 public class Labels extends JPanel {
 	
-	private static final long serialVersionUID = 1L;
-	
 	private JLabel label,cellsalive;
 	private Integer counter;
 	
 	public Labels() {
-		// Set the counter to 0
 		counter = 0;
-		// Initialize the labels and set their text
 		label = new JLabel();
 		label.setText("Generation: " + counter.toString());
 		cellsalive = new JLabel();

@@ -12,40 +12,41 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Random;
+
 import javax.swing.JPanel;
 
+/**
+ * Represents the canvas where the grid is going to be drawn
+ */
 public class Canvas extends JPanel {
 	
-	private static final long serialVersionUID = 1L;
-	private static final int squarSize = 10;
-	
 	private ArrayList<Point> locs;
+	private int SqaureSize = 10;
 	
 	public Canvas() {
 		this.locs = new ArrayList<Point>();
 		
-		// Set the size and color of the panel
-		this.setPreferredSize(new Dimension(1000,1000));
+		// Set the size of the panel
+		this.setPreferredSize(new Dimension(400,390));
 		this.setMaximumSize(new Dimension(1000,1000));
 		this.setMinimumSize(new Dimension(1000,1000));
 	}
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		super.paintComponent(g); 
-		// Set the width and height of the square
-		int width = squarSize; 
-		int height = squarSize;
-		// Create the graphics
+		super.paintComponent(g);
+		int width = SqaureSize; 
+		int height = SqaureSize;
 		Graphics2D painter = (Graphics2D) g;
 		painter.setColor(Color.gray);
 		// Draw the grid
-		for(int i = 10; i < 1000; i += 10) {
+		for(int i = SqaureSize; i < 1000; i += SqaureSize) {
 			painter.drawLine(i,0,i,1000); // Lines on the y-axis
 			painter.drawLine(0,i,1000,i); // Lines in the x-axis
 		}
 		// Color of the cells
-		painter.setColor(Color.red);
+		painter.setColor(Color.RED);
 		for(Point p : this.locs) {
 			int x = p.x * width; // Change grid x location to pixel x location
 			int y = p.y * height; // Change grid y location to pixel y location
@@ -57,9 +58,32 @@ public class Canvas extends JPanel {
 		}
 	}
 	
-
+	/**
+	 * sets the ArrayList<Point> locs to the ArrayList<Point> locs in the class
+	 * @param loc is the ArrayList to be set to 
+	 * @return none
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			none
+	 * <dt><b>Postconditions</b><dd>
+	 * 			this.locs is now = locs   
+	 */
 	public void setlocs(ArrayList<Point> locs) {
 		this.locs = locs;
+	}
+	
+	/** 
+	 * set the size of every square in the canvas
+	 * @param size is the size 
+	 * @return none
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			none
+	 * <dt><b>Postconditions</b><dd>
+	 * 			the size of the square is now = size
+	 */
+	public void setSquareSize(int size){
+		this.SqaureSize=size;
 	}
 	
 	/**
@@ -116,5 +140,38 @@ public class Canvas extends JPanel {
 	 */
 	public Integer numbLocs() {
 		return this.locs.size();
+	}
+	
+	/**
+	 * Determines the size of the canvas based on integer sent from the controller
+	 * @param x the integer determines which button is pushed
+	 * @return none
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			none
+	 * <dt><b>Postconditions</b><dd>
+	 * 			the size of the canvas is now changed to the appropriate size 
+	 */
+	public void setcanvasSize(int x){
+		if(x==1){
+			this.setPreferredSize(new Dimension(450,450));
+			this.setBounds(1, 1, 450, 390);
+		}
+		else if(x==2){
+			this.setPreferredSize(new Dimension(800,800));
+			this.setBounds(1, 1, 800, 800);
+		}
+		else{
+			this.setPreferredSize(new Dimension(1000,1000));
+			this.setBounds(1, 1, 1000, 1000);
+		}
+	}
+
+	public int getSqaureSize() {
+		return SqaureSize;
+	}
+
+	public void setSqaureSize(int sqaureSize) {
+		SqaureSize = sqaureSize;
 	}
 }

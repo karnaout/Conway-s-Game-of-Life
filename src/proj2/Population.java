@@ -11,39 +11,42 @@ import java.util.HashSet;
 import java.util.Observable;
 import javax.swing.Timer;
 
-// Population represents a grid of values(true, false) stands to the cells in 
-// the cells in the grid and determine whether it is alive or dead  
-public class Population extends Observable{
-
-	private boolean[][] population;
-	private Timer timer;
+/**
+ * Population represents a grid of values(true, false) stands to the cells in 
+ * the cells in the grid and determine whether it is alive or dead 
+ *
+ */
+public class Population extends Observable {
+	
+	private Cell[][] grid;
+	private Timer ticktock,ticktockalive;
 	
 	/**
-	 * Construct a 3x3 population grid with all cells equal to false   
-	 * @return new 3x3 false population
+	 * Construct a 100x100 population grid with all cells equal to false   
+	 * @return new 100x100 false population
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
 	 * 			none
 	 * <dt><b>Postconditions</b><dd>
 	 * 			none  
 	 */
-	protected Population(){
-		Other o = new Other();
-		this.population = o.fillArray(100, 100, false);
+	public Population() {
+		this.grid = new Cell[100][100];
+		this.killcells();
 	}
 	
 	/**
-	 * Construct a population(r,c) grid with all cells equal to false   
-	 * @return new empty population(r,c) 
+	 * Construct a population(rows,columns) grid with all cells equal to false   
+	 * @return new empty population(rows,columns) 
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
 	 * 			none
 	 * <dt><b>Postconditions</b><dd>
 	 * 			none  
 	 */	
-	private Population(int r, int c){
-		Other o = new Other();
-		this.population = o.fillArray(r, c, false);
+	public Population(int rows, int columns) {
+		this.grid = new Cell[rows][columns];
+		this.killcells();
 	}
 	
 	/**
@@ -56,65 +59,8 @@ public class Population extends Observable{
 	 * <dt><b>Postconditions</b><dd>
 	 * 			none  
 	 */
-	public Population(boolean[][] population) {
-		this.population = population;
-	}
-	
-	
-	/**
-	 * Generates the next generation  
-	 * @return new population represents the new population
-	 * @throws none
-	 * <dt><b>Preconditions</b><dd>
-	 * 			none
-	 * <dt><b>Postconditions</b><dd>
-	 * 			none  
-	 */
-	private Population nextGen(){
-		if(this.population == null || this.population.length == 0){
-			throw new RuntimeException("Error!");
-		}
-		Population newPop = new Population(this.numRows(),this.numCols());
-		for(int r=0; r<this.population.length;r++){
-			for(int c=0; c<this.population[r].length;c++){
-				if(this.isAlive(r, c)){
-					// If cell is alive and number of neighbors are greater than 3
-					// or it's less than two the cell is Dead
-					if(this.neighborsAlive(r,c)<2 || this.neighborsAlive(r,c)>3){
-						newPop.setState(r,c, false);
-					}
-					else{
-						// Or it stays alive
-						newPop.setState(r,c, true);
-					}
-				}
-				// or if the cell is dead
-				else{
-					// comes back to life
-					if(this.neighborsAlive(r,c)==3){
-						newPop.setState(r,c,true);
-					}
-					else{
-						// else it stays dead
-						newPop.setState(r,c,false);
-					}
-				}
-			}
-		}
-		return newPop;
-	}
-	
-	/**
-	 * sets the current population to the next population
-	 * @return none
-	 * @throws none
-	 * <dt><b>Preconditions</b><dd>
-	 * 			none
-	 * <dt><b>Postconditions</b><dd>
-	 * 			the population is now set to the next population  
-	 */
-	public void setToNext(){
-		this.population = this.nextGen().getPopulation();
+	private Population(Cell[][] population) {
+		this.grid = population;
 	}
 	
 	/**
@@ -126,8 +72,8 @@ public class Population extends Observable{
 	 * <dt><b>Postconditions</b><dd>
 	 * 			none
 	 */
-	protected int numRows(){
-		return this.population.length;
+	private int numRows(){
+		return this.grid.length;
 	}
 	
 	/**
@@ -139,8 +85,8 @@ public class Population extends Observable{
 	 * <dt><b>Postconditions</b><dd>
 	 * 			none
 	 */
-	protected int numCols(){
-		return this.population[0].length;
+	private int numCols(){
+		return this.grid[this.numRows()-1].length;
 	}
 	
 	/**
@@ -152,53 +98,36 @@ public class Population extends Observable{
 	 * <dt><b>Postconditions</b><dd>
 	 * 			none
 	 */
-	protected int size(){
+	private int size(){
 		return this.numCols()*this.numRows();
 	}
 	
 	/**
-	 * The value of the cell r,c
-	 * @param r the row
-	 * @param c the column 
-	 * @return boolean in the cell r,c
+	 * sets the timer that will control the game
+	 * @param t is the Timer
+	 * @return none
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
-	 * 			the cell r,c in boundaries and it's not null
-	 * <dt><b>Postconditions</b><dd>
 	 * 			none
+	 * <dt><b>Postconditions</b><dd>
+	 * 			this.ticktock is now = t    
 	 */
-	protected boolean cellAt(int r, int c){
-		return this.population[r][c];
+	public void setTicktock(Timer t){
+		this.ticktock = t;
 	}
-	
+
 	/**
-	 * Determine if the cell(r,c) is alive or not
-	 * @param r the row
-	 * @param c the column   
-	 * @return true if the cell(r,c) is true and false if its false
+	 * sets another timer that will be used to construct random cells
+	 * @param t is the Timer
+	 * @return none
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
-	 * 			the cell r,c in boundaries and it's not null
-	 * <dt><b>Postconditions</b><dd>
 	 * 			none
-	 */
-	protected boolean isAlive(int r, int c){
-		return (this.population[r][c])? true:false;
-	}
-	
-	/**
-	 * Returns the state of the cell(r,c) in the next generation
-	 * @param r the row
-	 * @param c the column 
-	 * @return true if the cell(r,c) is true in the next generation. Otherwise returns false 
-	 * @throws none
-	 * <dt><b>Preconditions</b><dd>
-	 * 			the cell r,c in boundaries and it's not null
 	 * <dt><b>Postconditions</b><dd>
-	 * 			none
+	 * 			this.ticktockalive is now = t    
 	 */
-	protected boolean nextState(int r, int c){
-		return this.nextGen().isAlive(r, c);
+	public void setTicktockAlive(Timer t) {
+		this.ticktockalive = t;
 	}
 	
 	/**
@@ -242,19 +171,122 @@ public class Population extends Observable{
 	}
 	
 	/**
-	 * set the state of the cell(r,c) to s
-	 * @param r the row 
-	 * @param c the column 
-	 * @param s the new state
+	 * Generates the next generation  
+	 * @return new grid represents the new population
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			the current population != null || empty
+	 * <dt><b>Postconditions</b><dd>
+	 * 			none  
+	 */
+	private Cell[][] nextGen(){
+		Cell[][] newPop = new Cell[this.numRows()][this.numCols()];
+		for(int r=0; r<this.numRows();r++){
+			for(int c=0; c<this.numCols();c++){
+				if(this.isAlive(r, c)){
+					// If cell is alive and number of neighbors are greater than 3
+					// or it's less than two the cell is Dead
+					if(this.neighborsAlive(r,c)<2 || this.neighborsAlive(r,c)>3){
+						newPop[r][c] = new Dead(); // Becomes dead
+					}
+					else{
+						// Or it stays alive
+						newPop[r][c] = new Alive(); // stays alive
+					}
+				}
+				// or if the cell is dead
+				else{
+					// comes back to life
+					if(this.neighborsAlive(r,c)==3){
+						newPop[r][c] = new Alive(); // Comes back to life
+					}
+					else{
+						// else it stays dead
+						newPop[r][c] = new Dead(); // stays dead
+					}
+				}
+			}
+		}
+		return newPop;
+	}
+		
+	/**
+	 * replace old generation with the new one and inform the observer with new changes
 	 * @return none
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
-	 * 			the cell r,c in boundaries 
+	 * 			none
 	 * <dt><b>Postconditions</b><dd>
-	 * 			the cell(r,c) is now equal to s
+	 * 			this grid is now updated and the observer notified  
 	 */
-	protected void setState(int r, int c, boolean s){
-		this.population[r][c]=s;
+	public void update() {
+		this.grid = this.nextGen(); // replace old generation with new one
+		this.setChanged();
+		this.notifyObservers(this.AlivePupolation());
+	}
+	
+	/**
+	 * Determine if the cell(r,c) is alive or not
+	 * @param r the row
+	 * @param c the column   
+	 * @return true if the cell(r,c) is true and false if its false
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			the cell r,c in boundaries and it's not null
+	 * <dt><b>Postconditions</b><dd>
+	 * 			none
+	 */
+	public boolean isAlive(int r, int c) {
+		return this.grid[r][c].isAlive();
+	}
+
+	/**
+	 * sets a cell alive in the location (r,c)
+	 * @param r the row
+	 * @param c the column   
+	 * @return none
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			none
+	 * <dt><b>Postconditions</b><dd>
+	 * 			the cell[r][c] is now alive
+	 */
+	public void setAlive(int r, int c) {
+		this.grid[r][c] = new Alive();
+	}
+	
+	/**
+	 * sets the cell in the location (r,c) dead 
+	 * @param r the row
+	 * @param c the column   
+	 * @return none
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			none
+	 * <dt><b>Postconditions</b><dd>
+	 * 			the cell[r][c] is now dead
+	 */
+	public void kill(int r, int c) {
+		this.grid[r][c] = new Dead();
+	}
+	
+	/**
+	 * sets all the cells in this.grid to be dead 
+	 * @return none
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			none
+	 * <dt><b>Postconditions</b><dd>
+	 * 			this.grid is now all dead cells
+	 */
+	public void killcells() {
+		int rows = this.grid.length;
+		int columns = this.grid[rows-1].length;
+		for (int r=0; r < rows; r++) {
+			for (int c=0; c < columns; c++) {
+				this.kill(r,c);
+			}
+		}
 	}
 	
 	/**
@@ -267,22 +299,21 @@ public class Population extends Observable{
 	 * 			none
 	 */
 	public ArrayList<Point> AlivePupolation() {
-		if(this.population == null || this.population.length == 0){
-			throw new RuntimeException("Error!");
-		}
-		ArrayList<Point> array = new ArrayList<Point>();
-		for(int r=0; r<this.population.length;r++){
-			for(int c=0; c<this.population[r].length;c++){
-				if(this.isAlive(r, c)){
-					array.add(new Point(r,c));
+		int rows = this.grid.length;
+		int columns = this.grid[rows-1].length;
+		ArrayList<Point> locs = new ArrayList<Point>();
+		for(int r=0; r < rows; r++) {
+			for(int c=0; c < columns; c++) {
+				if(this.grid[r][c].isAlive()) {
+					locs.add(new Point(c,r));
 				}
 			}
 		}
-		return array;
+		return locs;
 	}
 	
 	 /**
-	 * This method calls the stop method
+	 * This method calls the stop method of the timer
 	 * @return none
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
@@ -291,11 +322,25 @@ public class Population extends Observable{
 	 * 			none
 	 */
 	public void stop() {
-		this.timer.stop();		
+		this.ticktock.stop();		
 	}
 	
 	 /**
-	 * This method calls the start method 
+	 * This method calls the stop method of the timer
+	 * this will stop random cells
+	 * @return none
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			none 
+	 * <dt><b>Postconditions</b><dd>
+	 * 			none
+	 */
+	public void stopRandom() {
+		this.ticktockalive.stop();
+	}
+
+	 /**
+	 * This method calls the start method of the Timer
 	 * @return none
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
@@ -304,27 +349,27 @@ public class Population extends Observable{
 	 * 			none
 	 */
 	public void start() {
-		this.timer.start();
+		this.ticktock.start();
 	}
-	 
-	/**
-	 * This method sets all the cells to false 
+	
+	 /**
+	 * This method calls the start method of the timer
+	 * this will start random cells
 	 * @return none
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
 	 * 			none 
 	 * <dt><b>Postconditions</b><dd>
-	 * 			the population is now all false
+	 * 			none
 	 */
-	public void reset() {
-		Other o = new Other();
-		this.population = o.fillArray(this.numRows(), this.numCols(), false);
+	public void startRandom() {
+		this.ticktockalive.start();
 	}
 	
 	 /**
-	 * This method calls the isRunning method that is
-	 * defined in the Timer class 
-	 * @return none
+	 * This method calls the isRunning method that is defined in the Timer class
+	 * this will start random cells
+	 * @return true if the timer is running 
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
 	 * 			none 
@@ -332,38 +377,42 @@ public class Population extends Observable{
 	 * 			none
 	 */
 	public boolean isRunning() {
-		return this.timer.isRunning();
+		return this.ticktock.isRunning();
 	}
-	
-	 /**
-	 * set the population to the next one and inform the view with the 
-	 * new arrayList of alive population 
-	 * @return none
+	 
+	/**
+	 * This method calls the isRunning method that is defined in the Timer class
+	 * this will check to see if random cells are running
+	 * @return true if the  timer is running 
 	 * @throws none
 	 * <dt><b>Preconditions</b><dd>
 	 * 			none 
 	 * <dt><b>Postconditions</b><dd>
 	 * 			none
-	 */	
-	public void update(){
-		this.setToNext();
-		this.setChanged();
-		this.notifyObservers(this.AlivePupolation());
+	 */
+	public boolean isRandom() {
+		return this.ticktockalive.isRunning();
 	}
-	protected boolean[][] getPopulation() {
-		return population;
+	
+	/**
+	 * Get a cell at r,c
+	 * @return the cell(r,c) 
+	 * @throws none
+	 * <dt><b>Preconditions</b><dd>
+	 * 			the cell exist  
+	 * <dt><b>Postconditions</b><dd>
+	 * 			none
+	 */
+	protected Cell getCell(int r, int c) {
+		Cell n = null; 
+		try{
+			 n = this.grid[r][c]; 
+		}
+		catch(ArrayIndexOutOfBoundsException e){
+			System.out.println("Wrong Cell");
+		}
+		return n;
 	}
-
-	protected void setPopulation(boolean[][] population) {
-		this.population = population;
-	}
-
-	public Timer getTimer() {
-		return timer;
-	}
-
-	public void setTimer(Timer timer) {
-		this.timer = timer;
-	}
-
 }
+			
+	
