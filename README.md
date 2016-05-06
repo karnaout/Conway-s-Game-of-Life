@@ -1,3 +1,4 @@
-## Conway’s Game of Lif
-# COMP210 - Project 2 - Conway’s Game of Life
-#Spring 2016
+# Conway’s Game of Lif
+## Khaled Arnaout
+### Monmouth College - COMP-210
+#### This Project is done as an assignment for school in Spring 2016
